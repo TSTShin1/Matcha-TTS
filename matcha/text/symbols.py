@@ -1,17 +1,17 @@
-""" from https://github.com/keithito/tacotron
+"""Tập ký tự tiếng Việt cho mô hình Matcha-TTS hoặc Tacotron."""
 
-Defines the set of symbols used in text input to the model.
-"""
+# Ký hiệu đặc biệt
 _pad = "_"
-_punctuation = ';:,.!?¡¿—…"«»“” '
-_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-_letters_ipa = (
-    "ɑɐɒæɓʙβɔɕçɗɖðʤəɘɚɛɜɝɞɟʄɡɠɢʛɦɧħɥʜɨɪʝɭɬɫɮʟɱɯɰŋɳɲɴøɵɸθœɶʘɹɺɾɻʀʁɽʂʃʈʧʉʊʋⱱʌɣɤʍχʎʏʑʐʒʔʡʕʢǀǁǂǃˈˌːˑʼʴʰʱʲʷˠˤ˞↓↑→↗↘'̩'ᵻ"
+_punctuation = ';:,.!?¡¿—…"«»“”() '
+
+# Các chữ cái tiếng Việt có dấu
+_letters_vietnamese = (
+    "AĂÂBCDĐEÊGHIKLMNOÔƠPQRSTUƯVXY"
+    "aăâbcdđeêghiklmnoôơpqrstuưvxy"
 )
 
-
 # Export all symbols:
-symbols = [_pad] + list(_punctuation) + list(_letters) + list(_letters_ipa)
+symbols = [_pad] + list(_punctuation) + list(_letters_vietnamese)
 
 # Special symbol ids
 SPACE_ID = symbols.index(" ")

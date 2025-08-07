@@ -1,71 +1,74 @@
-""" from https://github.com/keithito/tacotron """
-
+"""Vietnamese number normalization for TTS
+"""
 import re
 
-import inflect
+_units = ["", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"]
+_special_units = {1: "mốt", 4: "tư", 5: "lăm"}
+_positions = ["", "nghìn", "triệu", "tỷ"]
 
-_inflect = inflect.engine()
-_comma_number_re = re.compile(r"([0-9][0-9\,]+[0-9])")
-_decimal_number_re = re.compile(r"([0-9]+\.[0-9]+)")
-_pounds_re = re.compile(r"£([0-9\,]*[0-9]+)")
-_dollars_re = re.compile(r"\$([0-9\.\,]*[0-9]+)")
-_ordinal_re = re.compile(r"[0-9]+(st|nd|rd|th)")
 _number_re = re.compile(r"[0-9]+")
 
 
-def _remove_commas(m):
-    return m.group(1).replace(",", "")
+def read_three_digits(number):
+    number = int(number)
+    hundreds = number // 100
+    tens = (number % 100) // 10
+    units = number % 10
+    result = []
+
+    if hundreds != 0:
+        result.append(_units[hundreds] + " trăm")
+    elif tens != 0 or units != 0:
+        result.append("không trăm")
+
+    if tens != 0:
+        if tens == 1:
+            result.append("mươi")
+        else:
+            result.append(_units[tens] + " mươi")
+    elif units != 0:
+        result.append("linh")
+
+    if units != 0:
+        if tens >= 2 and units in _special_units:
+            result.append(_special_units[units])
+        else:
+            result.append(_units[units])
+
+    return " ".join(result)
 
 
-def _expand_decimal_point(m):
-    return m.group(1).replace(".", " point ")
+def split_number_to_groups(number):
+    s = str(number)
+    groups = []
+    while s:
+        groups.insert(0, s[-3:])
+        s = s[:-3]
+    return groups
 
 
-def _expand_dollars(m):
-    match = m.group(1)
-    parts = match.split(".")
-    if len(parts) > 2:
-        return match + " dollars"
-    dollars = int(parts[0]) if parts[0] else 0
-    cents = int(parts[1]) if len(parts) > 1 and parts[1] else 0
-    if dollars and cents:
-        dollar_unit = "dollar" if dollars == 1 else "dollars"
-        cent_unit = "cent" if cents == 1 else "cents"
-        return f"{dollars} {dollar_unit}, {cents} {cent_unit}"
-    elif dollars:
-        dollar_unit = "dollar" if dollars == 1 else "dollars"
-        return f"{dollars} {dollar_unit}"
-    elif cents:
-        cent_unit = "cent" if cents == 1 else "cents"
-        return f"{cents} {cent_unit}"
-    else:
-        return "zero dollars"
+def number_to_vietnamese_words(number):
+    number = int(number)
+    if number == 0:
+        return "không"
 
+    groups = split_number_to_groups(number)
+    result = []
+    for i, group in enumerate(groups):
+        group_int = int(group)
+        if group_int != 0:
+            words = read_three_digits(group.zfill(3))
+            position = _positions[len(groups) - i - 1]
+            result.append(words + (" " + position if position else ""))
+        elif i == len(groups) - 1 and not result:
+            result.append("không")
 
-def _expand_ordinal(m):
-    return _inflect.number_to_words(m.group(0))
+    return " ".join(result).strip()
 
 
 def _expand_number(m):
-    num = int(m.group(0))
-    if num > 1000 and num < 3000:
-        if num == 2000:
-            return "two thousand"
-        elif num > 2000 and num < 2010:
-            return "two thousand " + _inflect.number_to_words(num % 100)
-        elif num % 100 == 0:
-            return _inflect.number_to_words(num // 100) + " hundred"
-        else:
-            return _inflect.number_to_words(num, andword="", zero="oh", group=2).replace(", ", " ")
-    else:
-        return _inflect.number_to_words(num, andword="")
+    return number_to_vietnamese_words(m.group(0))
 
 
 def normalize_numbers(text):
-    text = re.sub(_comma_number_re, _remove_commas, text)
-    text = re.sub(_pounds_re, r"\1 pounds", text)
-    text = re.sub(_dollars_re, _expand_dollars, text)
-    text = re.sub(_decimal_number_re, _expand_decimal_point, text)
-    text = re.sub(_ordinal_re, _expand_ordinal, text)
-    text = re.sub(_number_re, _expand_number, text)
-    return text
+    return re.sub(_number_re, _expand_number, text)
