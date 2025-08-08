@@ -26,7 +26,7 @@ _vietnamese_abbreviations = [
     (re.compile(r"\bTW\b", re.IGNORECASE), "trung ương"),
     (re.compile(r"\bTHCS\b", re.IGNORECASE), "trung học cơ sở"),
     (re.compile(r"\bTHPT\b", re.IGNORECASE), "trung học phổ thông"),
-    (re.compile(r"\bđc\b", re.IGNORECASE), "được"),
+    (re.compile(r"\bđc\b", re.IGNORECASE), "được"), 
     (re.compile(r"\bTV\b", re.IGNORECASE), "ti vi"),
     (re.compile(r"\bkm\b", re.IGNORECASE), "ki lô mét"),
     (re.compile(r"\bkg\b", re.IGNORECASE), "ki lô gam"),
